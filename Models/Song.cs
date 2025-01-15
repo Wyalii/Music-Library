@@ -9,5 +9,7 @@ namespace MusicLibrary
         public string Lyrics { get; set; }
         public int TrackNumber { get; set; }
         public int TimesPlayed { get; set; }
+        public Album Album { get; set; }
+
     }
 }

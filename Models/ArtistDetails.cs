@@ -8,6 +8,8 @@ namespace MusicLibrary
         public string Website { get; set; }
         public int TotalAlbums { get; set; }
         public bool IsActive { get; set; }
+        public Artist Artist { get; set; }
+
 
     }
 }
