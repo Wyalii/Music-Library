@@ -148,3 +148,10 @@
 /home/wyalii/Desktop/Music Library/obj/Debug/net9.0/Music Library.pdb
 /home/wyalii/Desktop/Music Library/obj/Debug/net9.0/Music Library.genruntimeconfig.cache
 /home/wyalii/Desktop/Music Library/obj/Debug/net9.0/ref/Music Library.dll
+/home/wyalii/Desktop/Music Library/bin/Debug/net9.0/NAudio.dll
+/home/wyalii/Desktop/Music Library/bin/Debug/net9.0/NAudio.Asio.dll
+/home/wyalii/Desktop/Music Library/bin/Debug/net9.0/NAudio.Core.dll
+/home/wyalii/Desktop/Music Library/bin/Debug/net9.0/NAudio.Midi.dll
+/home/wyalii/Desktop/Music Library/bin/Debug/net9.0/NAudio.Wasapi.dll
+/home/wyalii/Desktop/Music Library/bin/Debug/net9.0/NAudio.WinMM.dll
+/home/wyalii/Desktop/Music Library/bin/Debug/net9.0/LibVLCSharp.dll

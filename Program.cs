@@ -6,8 +6,10 @@
         {
             ArtistsRepository artistsRepository = new ArtistsRepository();
             AlbumsRepository albumsRepository = new AlbumsRepository();
+            SongsRepository songsRepository = new SongsRepository();
+            songsRepository.AddSong();
 
-            albumsRepository.PrintAlbums();
+
         }
     }
 }
