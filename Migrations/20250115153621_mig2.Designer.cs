@@ -11,7 +11,7 @@ using MusicLibrary;
 
 namespace Music_Library.Migrations
 {
-    [DbContext(typeof(Database))]
+    [DbContext(typeof(MusicLibraryDb))]
     [Migration("20250115153621_mig2")]
     partial class mig2
     {
