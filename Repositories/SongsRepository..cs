@@ -101,46 +101,128 @@ namespace MusicLibrary
         public void PlayMusic()
         {
             Console.Clear();
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string downloadFolder = Path.Combine(desktopPath, "Downloaded Songs");
-            if (Directory.Exists(downloadFolder))
+            Console.WriteLine("Write an Song Id");
+            int SongIdValue;
+            if (int.TryParse(Console.ReadLine(), out SongIdValue))
             {
-                Console.WriteLine("Folder Already Exists");
+                var song = musicLibraryDb.Songs
+                .Include(s => s.Album)
+                .Include(s => s.Album.Artist)
+                .FirstOrDefault(s => s.Id == SongIdValue);
+                if (song != null)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Insturctions:");
+                    Console.WriteLine($"--- Folder Named: {song.Album.Title} Will be created on your desktop.");
+                    Console.WriteLine($"--- Please Dont Modify Downloaded Folder on your own.");
+                    Console.WriteLine($"--- Song: {song.Title} will be downloaded on folder.");
+                    Console.WriteLine($"--- Make sure there are no folder on you desktop with same folder name: {song.Album.Title}");
+
+
+                    string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    string FolderPath = Path.Combine(desktopPath, $"{song.Album.Title}");
+
+                    if (!Directory.Exists(FolderPath))
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine($"Creating Folder: {song.Album.Title} ...");
+                        Directory.CreateDirectory(FolderPath);
+                        Console.WriteLine();
+                        Console.WriteLine("Folder Created.");
+                        Console.WriteLine();
+                        Console.WriteLine("downloading Mp3 Files...");
+                        Console.WriteLine();
+                        var AllSongs = musicLibraryDb.Songs.Where(s => s.AlbumId == song.AlbumId).ToList();
+                        var client = new WebClient();
+                        foreach (var music in AllSongs)
+                        {
+                            var FileName = $"{music.Title}.mp3";
+                            var FilePath = Path.Combine(FolderPath, FileName);
+                            try
+                            {
+                                Console.WriteLine($"Downloading Music: {music.Title}...");
+                                client.DownloadFile(music.MusicUrl, FilePath);
+                                Console.WriteLine($"Downloaded Music: {music.Title}");
+                                Console.WriteLine();
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Exception: {ex.InnerException}");
+                            }
+                        }
+
+
+                        string SongFilePath = Path.Combine(FolderPath, $"{song.Title}.mp3");
+                        if (SongFilePath != null)
+                        {
+                            var LibVLC = new LibVLC();
+                            var media = new Media(LibVLC, SongFilePath);
+                            var Player = new MediaPlayer(media);
+                            Console.WriteLine();
+                            Console.WriteLine($"Album Name: {song.Album.Title}");
+                            Console.WriteLine();
+                            Console.WriteLine($"Playing Song: {song.Title}");
+                            Console.WriteLine();
+                            Console.WriteLine($"Artist: {song.Album.Artist.Name}");
+                            Console.WriteLine();
+                            Console.WriteLine($"Song Duration: {song.TimeSpan}");
+                            Player.Play();
+                            Console.ReadKey();
+                            Console.WriteLine($"Finished Playing {song.Title}");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Folder Already Exists.");
+                        string SongFilePath = Path.Combine(FolderPath, $"{song.Title}.mp3");
+                        if (!File.Exists(SongFilePath))
+                        {
+                            Console.WriteLine($"Updating Folder: {song.Album.Title}");
+                            var client = new WebClient();
+                            try
+                            {
+                                client.DownloadFile(song.MusicUrl, SongFilePath);
+                                Console.WriteLine($"Downloaded Song: {song.Title}");
+                                Console.WriteLine($"Update Finished.");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Exception: {ex.InnerException}");
+                            }
+
+                        }
+
+                        var LibVLC = new LibVLC();
+                        var media = new Media(LibVLC, SongFilePath);
+                        var Player = new MediaPlayer(media);
+                        Console.WriteLine();
+                        Console.WriteLine($"Album Name: {song.Album.Title}");
+                        Console.WriteLine();
+                        Console.WriteLine($"Playing Song: {song.Title}");
+                        Console.WriteLine();
+                        Console.WriteLine($"Artist: {song.Album.Artist.Name}");
+                        Console.WriteLine();
+                        Console.WriteLine($"Song Duration: {song.TimeSpan}");
+                        Player.Play();
+                        Console.ReadKey();
+                        Console.WriteLine($"Finished Playing {song.Title}");
+                        return;
+
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine($"Song with provided id {SongIdValue} was not found.");
+                    return;
+                }
+
             }
             else
             {
-                Console.WriteLine("CreatingFolder...");
-                Directory.CreateDirectory(downloadFolder);
-                Console.WriteLine($"Created Folder : {Path.GetFileName(downloadFolder)}");
-                var AllSongs = musicLibraryDb.Songs.ToList();
-                foreach (var song in AllSongs)
-                {
-                    string FileName = $"{song.Title}.mp3";
-                    string FilePath = Path.Combine(downloadFolder, FileName);
-                    if (File.Exists(FilePath))
-                    {
-                        Console.WriteLine("File Already Exists.");
-                        continue;
-                    }
-
-                    Console.WriteLine($"Downloading {song.Title}...");
-                    try
-                    {
-                        var client = new WebClient();
-                        client.DownloadFile(song.MusicUrl, FilePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error downloading {song.Title}: {ex.Message}");
-                    }
-                }
-            }
-
-            var mp3files = Directory.GetFiles(downloadFolder, "*.mp3").ToList();
-            Console.WriteLine("All Files: ");
-            foreach (var mp3 in mp3files)
-            {
-                Console.WriteLine(mp3);
+                Console.WriteLine("Invalid Song Id Input.");
+                return;
             }
 
 
