@@ -84,9 +84,16 @@ namespace MusicLibrary
             var AlbumToRemove = musicLibraryDb.Albums.FirstOrDefault(a => a.Id == IdValue);
             if (AlbumToRemove != null)
             {
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string FolderPath = Path.Combine(desktopPath, $"{AlbumToRemove.Title}");
+                if (Directory.Exists(FolderPath))
+                {
+                    Directory.Delete(FolderPath, true);
+                    Console.WriteLine($"Removed Folder: {AlbumToRemove.Title}");
+                }
                 musicLibraryDb.Albums.Remove(AlbumToRemove);
                 musicLibraryDb.SaveChanges();
-                Console.WriteLine($"Removed Album: {AlbumToRemove.Title}");
+                Console.WriteLine($"Removed Album from database: {AlbumToRemove.Title}");
                 return;
             }
             else
