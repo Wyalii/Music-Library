@@ -116,7 +116,7 @@ namespace MusicLibrary
                     Console.WriteLine($"--- Folder Named: {song.Album.Title} Will be created on your desktop.");
                     Console.WriteLine($"--- Please Dont Modify Downloaded Folder on your own.");
                     Console.WriteLine($"--- Song: {song.Title} will be downloaded on folder.");
-                    Console.WriteLine($"--- Make sure there are no folder on you desktop with same folder name: {song.Album.Title}");
+                    Console.WriteLine($"--- Make sure there are no other folder on you desktop with same folder name: {song.Album.Title}");
 
 
                     string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
@@ -153,7 +153,7 @@ namespace MusicLibrary
 
 
                         string SongFilePath = Path.Combine(FolderPath, $"{song.Title}.mp3");
-                        if (SongFilePath != null)
+                        if (File.Exists(SongFilePath))
                         {
                             var LibVLC = new LibVLC();
                             var media = new Media(LibVLC, SongFilePath);
@@ -228,26 +228,178 @@ namespace MusicLibrary
 
         }
 
+        public void UpdateSong()
+        {
+            Console.Clear();
+            Console.WriteLine("Provide Song Id.");
+            int SongId = int.Parse(Console.ReadLine());
+            var song = musicLibraryDb.Songs.Include(s => s.Album).Include(s => s.Album.Artist).FirstOrDefault(s => s.Id == SongId);
+            if (song != null)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Provide new Song Title:");
+                string NewSongtTitle = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(NewSongtTitle))
+                {
+                    Console.WriteLine("Invalid Song Title Input");
+                    return;
+                }
 
+                Console.WriteLine("Provide new song Timespan:");
+                TimeSpan NewSongTimespan;
+                if (!TimeSpan.TryParse(Console.ReadLine(), out NewSongTimespan))
+                {
+                    Console.WriteLine("Invalid Timespan Input.");
+                    return;
+                }
+
+                Console.WriteLine("Provide new music url:");
+                string NewSongUrl = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(NewSongUrl))
+                {
+                    Console.WriteLine("invalid new song url input.");
+                    return;
+                }
+
+                Console.WriteLine("Provide new TrackNumber");
+                string NewTrackNumberInput = Console.ReadLine();
+                int NewTrackNumber;
+                if (string.IsNullOrWhiteSpace(NewTrackNumberInput) || !int.TryParse(NewTrackNumberInput, out NewTrackNumber))
+                {
+                    Console.WriteLine("invalid TrackNumber input.");
+                    return;
+                }
+                var AllSongs = musicLibraryDb.Songs.Include(al => al.Album).Where(al => al.AlbumId == song.AlbumId).ToList();
+                while (AllSongs.Any(al => al.TrackNumber == NewTrackNumber))
+                {
+                    Console.WriteLine("Track Number taken, Try Again.");
+                    NewTrackNumberInput = Console.ReadLine();
+                    if (string.IsNullOrWhiteSpace(NewTrackNumberInput) || !int.TryParse(NewTrackNumberInput, out NewTrackNumber))
+                    {
+                        Console.WriteLine("Invalid Track Number Input");
+                        return;
+                    }
+
+                }
+
+                Console.WriteLine("Provide new timesplayed:");
+                int NewSongTimesPlayed;
+                if (!int.TryParse(Console.ReadLine(), out NewSongTimesPlayed))
+                {
+                    Console.WriteLine("Invalid Times Played Input.");
+                    return;
+                }
+
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string FolderPath = Path.Combine(desktopPath, $"{song.Album.Title}");
+                if (Directory.Exists(FolderPath))
+                {
+                    var FileName = $"{song.Title}.mp3";
+                    var FilePath = Path.Combine(FolderPath, FileName);
+
+                    if (File.Exists(FilePath))
+                    {
+                        var NewFileName = $"{NewSongtTitle}.mp3";
+                        var NewFilePath = Path.Combine(FolderPath, NewFileName);
+                        File.Move(FilePath, NewFilePath);
+                        Console.WriteLine("Updated Song in Folder.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("File Doesn't Exists.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Folder Doesn't Exists.");
+                }
+                song.Title = NewSongtTitle;
+                song.MusicUrl = NewSongUrl;
+                song.TimeSpan = NewSongTimespan;
+                song.TimesPlayed = NewSongTimesPlayed;
+                song.TrackNumber = NewTrackNumber;
+                musicLibraryDb.SaveChanges();
+                Console.WriteLine("Updated song.");
+                return;
+
+            }
+            else
+            {
+                Console.WriteLine("Song with provided id was not found.");
+                return;
+            }
+        }
+        public void PrintSongs()
+        {
+            Console.Clear();
+            var AllSongs = musicLibraryDb.Songs
+            .Include(s => s.Album).
+             Include(s => s.Album.Artist)
+            .ToList();
+
+            if (AllSongs.Count > 0)
+            {
+                Console.WriteLine($"All Songs List: ");
+                foreach (var song in AllSongs)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine($"Album Id: {song.Album.Id}, Album Title; {song.Album.Title}");
+                    Console.WriteLine();
+                    Console.WriteLine($"Song Id: {song.Id}, Song Name: {song.Title}");
+                    Console.WriteLine();
+                    Console.WriteLine($"Artist Id: {song.Album.Artist.Id}, Artists Name: {song.Album.Artist.Name}");
+                    Console.WriteLine();
+                    Console.WriteLine($"Timespan: {song.TimeSpan}, Genre: {song.Album.Genre}");
+                }
+                return;
+            }
+            else
+            {
+                Console.WriteLine("No Songs Avaiable.");
+                return;
+            }
+
+        }
         public void DeleteSong()
         {
             Console.Clear();
             Console.WriteLine("Provide id of song to delete:");
-            string SongIdInput = Console.ReadLine();
             int SongIdValue;
-            if (string.IsNullOrWhiteSpace(SongIdInput) || int.TryParse(SongIdInput, out SongIdValue))
+            if (!int.TryParse(Console.ReadLine(), out SongIdValue))
             {
                 Console.WriteLine($"invalid song id input.");
                 return;
             }
 
-            var song = musicLibraryDb.Songs.FirstOrDefault(s => s.Id == SongIdValue);
+            var song = musicLibraryDb.Songs
+            .Include(s => s.Album)
+            .Include(s => s.Album.Artist)
+            .FirstOrDefault(s => s.Id == SongIdValue);
             if (song != null)
             {
-                musicLibraryDb.Songs.Remove(song);
-                musicLibraryDb.SaveChanges();
-                Console.WriteLine($"removed song: {song.Title}");
-                return;
+                try
+                {
+                    var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    var FolderPath = Path.Combine(desktopPath, $"{song.Album.Title}");
+                    if (Directory.Exists(FolderPath))
+                    {
+                        var FileName = $"{song.Title}.mp3";
+                        var FilePath = Path.Combine(FolderPath, FileName);
+                        if (File.Exists(FilePath))
+                        {
+                            File.Delete(FilePath);
+                            Console.WriteLine($"Deleted Song From Folder.");
+                        }
+                    }
+                    musicLibraryDb.Songs.Remove(song);
+                    musicLibraryDb.SaveChanges();
+                    Console.WriteLine($"removed song: {song.Title}");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception: {ex.InnerException}");
+                }
             }
             else
             {
