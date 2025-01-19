@@ -118,6 +118,7 @@ namespace MusicLibrary
             var AlbumToUpdate = musicLibraryDb.Albums.FirstOrDefault(a => a.Id == IdValue);
             if (AlbumToUpdate != null)
             {
+
                 Console.WriteLine("Provide new album title: ");
                 string TitleInput = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(TitleInput))
@@ -152,13 +153,31 @@ namespace MusicLibrary
                     return;
                 }
 
-                AlbumToUpdate.Title = TitleInput;
-                AlbumToUpdate.ReleaseYear = ReleaseYearValue;
-                AlbumToUpdate.Genre = GenreInput;
-                AlbumToUpdate.Rating = RatingValue;
-                musicLibraryDb.SaveChanges();
-                Console.WriteLine("Success, Updated Album!");
-                return;
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string FolderPath = Path.Combine(desktopPath, AlbumToUpdate.Title);
+                string NewFolderPath = Path.Combine(desktopPath, TitleInput);
+                try
+                {
+
+                    if (Directory.Exists(FolderPath))
+                    {
+
+                        Directory.Move(FolderPath, NewFolderPath);
+                        Console.WriteLine("Updated Folder.");
+                    }
+                    AlbumToUpdate.Title = TitleInput;
+                    AlbumToUpdate.ReleaseYear = ReleaseYearValue;
+                    AlbumToUpdate.Genre = GenreInput;
+                    AlbumToUpdate.Rating = RatingValue;
+                    musicLibraryDb.SaveChanges();
+
+                    Console.WriteLine("Success, Updated Album!");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.Write($"{ex.InnerException}");
+                }
             }
             else
             {
@@ -183,14 +202,10 @@ namespace MusicLibrary
                 {
                     Console.WriteLine();
                     Console.WriteLine($"Album Id: {album.Id}, Album Title: {album.Title}");
-                    Console.WriteLine();
                     Console.WriteLine($"Artist Id: {album.ArtistId}, Artist Name: {album.Artist.Name}");
-                    Console.WriteLine();
-                    Console.WriteLine($"Release Year: {album.ReleaseYear}");
-                    Console.WriteLine();
-                    Console.WriteLine($"Genre: {album.Genre}");
-                    Console.WriteLine();
+                    Console.WriteLine($"Release Year: {album.ReleaseYear}, Genre: {album.Genre}");
                     Console.WriteLine($"Rating: {album.Rating}");
+                    Console.WriteLine();
                     Console.WriteLine();
                 }
                 return;

@@ -82,11 +82,28 @@ namespace MusicLibrary
                     return;
                 }
 
-                Song NewSong = new Song { AlbumId = AlbumIdValue, Title = NewSongtTitle, TimeSpan = TimeSpanValue, MusicUrl = MusicUrlInput, TrackNumber = TrackNumberValue, TimesPlayed = TimesPlayedValue };
-                musicLibraryDb.Songs.Add(NewSong);
-                musicLibraryDb.SaveChanges();
-                Console.WriteLine($"Song: {NewSong.Title} was added to Album: {album.Title}");
-                return;
+                try
+                {
+                    Song NewSong = new Song { AlbumId = AlbumIdValue, Title = NewSongtTitle, TimeSpan = TimeSpanValue, MusicUrl = MusicUrlInput, TrackNumber = TrackNumberValue, TimesPlayed = TimesPlayedValue };
+                    musicLibraryDb.Songs.Add(NewSong);
+                    musicLibraryDb.SaveChanges();
+                    string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    string FolderPath = Path.Combine(desktopPath, $"{NewSong.Album.Title}");
+                    if (Directory.Exists(FolderPath))
+                    {
+                        var client = new WebClient();
+                        string FileName = $"{NewSong.Title}.mp3";
+                        string FilePath = Path.Combine(FolderPath, FileName);
+                        Console.WriteLine($"Downloading Music: {NewSong.Title}...");
+                        client.DownloadFile(NewSong.MusicUrl, FilePath);
+                    }
+                    Console.WriteLine($"Song: {NewSong.Title} was added to Album: {album.Title}");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"{ex.InnerException}");
+                }
 
             }
             else
@@ -206,6 +223,7 @@ namespace MusicLibrary
                         Console.WriteLine($"Song Duration: {song.TimeSpan}");
                         Player.Play();
                         Console.ReadKey();
+                        Player.Stop();
                         Console.WriteLine($"Finished Playing {song.Title}");
                         return;
 
@@ -343,13 +361,12 @@ namespace MusicLibrary
                 foreach (var song in AllSongs)
                 {
                     Console.WriteLine();
-                    Console.WriteLine($"Album Id: {song.Album.Id}, Album Title; {song.Album.Title}");
-                    Console.WriteLine();
                     Console.WriteLine($"Song Id: {song.Id}, Song Name: {song.Title}");
-                    Console.WriteLine();
                     Console.WriteLine($"Artist Id: {song.Album.Artist.Id}, Artists Name: {song.Album.Artist.Name}");
-                    Console.WriteLine();
                     Console.WriteLine($"Timespan: {song.TimeSpan}, Genre: {song.Album.Genre}");
+                    Console.WriteLine();
+                    Console.WriteLine();
+
                 }
                 return;
             }
