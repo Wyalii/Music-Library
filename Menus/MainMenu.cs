@@ -7,6 +7,8 @@ namespace Music_Library
         AnalitycsMenu analitycsMenu = new AnalitycsMenu();
         SongsMenu songsMenu = new SongsMenu();
 
+        PlaylistsMenu playlistsMenu = new PlaylistsMenu();
+
         public void ShowMainMenu()
         {
             bool start = true;
@@ -55,6 +57,14 @@ namespace Music_Library
                 Console.WriteLine();
                 Console.WriteLine();
 
+                Console.WriteLine("5. PlaylistRepository");
+                Console.WriteLine("    5.1 Create Playlist");
+                Console.WriteLine("    5.2 add song to a  Playlist");
+                Console.WriteLine("    5.3 play your Playlist");
+
+                Console.WriteLine();
+                Console.WriteLine();
+
                 Console.WriteLine("0 - Exit");
                 string ActionInput = Console.ReadLine();
                 int ActionValue;
@@ -85,6 +95,10 @@ namespace Music_Library
 
                     case 4:
                         analitycsMenu.ShowAnalitycsMenu();
+                        break;
+
+                    case 5:
+                        playlistsMenu.ShowPlaylistsMenu();
                         break;
                 }
 
