@@ -4,8 +4,9 @@ namespace Music_Library
     {
         ArtistsMenu artistsMenu = new ArtistsMenu();
         AlbumsMenu albumsMenu = new AlbumsMenu();
-
+        AnalitycsMenu analitycsMenu = new AnalitycsMenu();
         SongsMenu songsMenu = new SongsMenu();
+
         public void ShowMainMenu()
         {
             bool start = true;
@@ -46,6 +47,14 @@ namespace Music_Library
                 Console.WriteLine();
                 Console.WriteLine();
 
+                Console.WriteLine("4. AnalityscRepostiory");
+                Console.WriteLine("    4.1 Most Listened Songs");
+                Console.WriteLine("    4.2 Genre Statistics");
+                Console.WriteLine("    4.3 Artists Ratings");
+
+                Console.WriteLine();
+                Console.WriteLine();
+
                 Console.WriteLine("0 - Exit");
                 string ActionInput = Console.ReadLine();
                 int ActionValue;
@@ -72,6 +81,10 @@ namespace Music_Library
 
                     case 3:
                         songsMenu.ShowSongsMenu();
+                        break;
+
+                    case 4:
+                        analitycsMenu.ShowAnalitycsMenu();
                         break;
                 }
 

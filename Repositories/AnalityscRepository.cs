@@ -21,6 +21,8 @@ namespace MusicLibrary
                     Console.WriteLine($"Album Id: {song.AlbumId}, Album Name: {song.Album.Title}");
                     Console.WriteLine();
                     Console.WriteLine($"Song Id: {song.Id}, Song Name: {song.Title}, Times Played: {song.TimesPlayed}");
+                    Console.WriteLine();
+                    Console.WriteLine();
                 }
                 return;
             }
@@ -42,7 +44,10 @@ namespace MusicLibrary
                 foreach (var album in AllAlbums)
                 {
                     Console.WriteLine();
-                    Console.WriteLine($"Album Id: {album.Id}, Artist: {album.Artist.Name}, Album Genre: {album.Genre}, Rating: {album.Rating}");
+                    Console.WriteLine($"Genre: {album.Genre}, Rating: {album.Rating}");
+                    Console.WriteLine($"Album: {album.Title}");
+                    Console.WriteLine();
+                    Console.WriteLine();
                 }
                 return;
             }
@@ -64,12 +69,13 @@ namespace MusicLibrary
                     Console.WriteLine();
                     Console.WriteLine($"Artist Id: {artist.Id}, Artist Name: {artist.Name}");
                     Console.WriteLine($"Artist Genre: {artist.Genre}");
-                    Console.WriteLine();
                     if (artist.Albums.Count > 0)
                     {
                         foreach (var album in artist.Albums)
                         {
-                            Console.WriteLine($"Album Id: {album.Id}, Album Title: {album.Title}, Rating: {album.Rating}");
+                            Console.WriteLine($"Album Id: {album.Id}, Album Title: {album.Title} , Rating: {album.Rating}");
+                            Console.WriteLine();
+                            Console.WriteLine();
                         }
                     }
                     else

@@ -7,7 +7,9 @@ namespace MusicLibrary
         static void Main()
         {
             MainMenu mainMenu = new MainMenu();
-            mainMenu.ShowMainMenu();
+            PlaylistRepository playlistRepository = new PlaylistRepository();
+            playlistRepository.PlayPlaylistSongs();
+
 
 
         }
