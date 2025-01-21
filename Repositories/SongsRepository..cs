@@ -96,18 +96,10 @@ namespace MusicLibrary
                     Song NewSong = new Song { AlbumId = AlbumIdValue, Title = NewSongtTitle, TimeSpan = TimeSpanValue, MusicUrl = MusicUrlInput, TrackNumber = TrackNumberValue, TimesPlayed = TimesPlayedValue };
                     musicLibraryDb.Songs.Add(NewSong);
                     musicLibraryDb.SaveChanges();
-                    string FolderPath = Path.Combine(desktopPath, $"{NewSong.Album.Title}");
                     string logEntry = $"{Environment.NewLine} {DateTime.Now}: Created Song - {NewSong.Title} in Album - {album.Title}";
                     File.AppendAllText(SystemLogsFile, logEntry);
 
-                    if (Directory.Exists(FolderPath))
-                    {
-                        var client = new WebClient();
-                        string FileName = $"{NewSong.Title}.mp3";
-                        string FilePath = Path.Combine(FolderPath, FileName);
-                        Console.WriteLine($"Downloading Music: {NewSong.Title}...");
-                        client.DownloadFile(NewSong.MusicUrl, FilePath);
-                    }
+
                     Console.WriteLine($"Song: {NewSong.Title} was added to Album: {album.Title}");
                     return;
                 }
@@ -129,129 +121,60 @@ namespace MusicLibrary
         public void PlayMusic()
         {
             Console.Clear();
-            Console.WriteLine("Write an Song Id");
-            int SongIdValue;
-            if (int.TryParse(Console.ReadLine(), out SongIdValue))
+            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            Console.WriteLine("Provide Song Id");
+            int SongId;
+            if (!int.TryParse(Console.ReadLine(), out SongId))
             {
-                var song = musicLibraryDb.Songs
-                .Include(s => s.Album)
-                .Include(s => s.Album.Artist)
-                .FirstOrDefault(s => s.Id == SongIdValue);
-                if (song != null)
+                Console.WriteLine("Invalid Song Id input.");
+                return;
+            }
+
+            var song = musicLibraryDb.Songs
+            .Include(s => s.Album)
+            .Include(s => s.Album.Artist)
+            .FirstOrDefault(s => s.Id == SongId);
+
+            if (song == null)
+            {
+                Console.WriteLine("Song With Provided Id doesn't exists.");
+                return;
+            }
+
+            try
+            {
+                LibVLC libVLC = new LibVLC();
+                var client = new WebClient();
+                string DownloadedSong = Path.Combine(desktopPath, $"{song.Title}");
+                if (File.Exists(DownloadedSong))
                 {
+                    Media media2 = new Media(libVLC, DownloadedSong);
+                    MediaPlayer mediaPlayer2 = new MediaPlayer(media2);
                     Console.WriteLine();
-                    Console.WriteLine("Insturctions:");
-                    Console.WriteLine($"--- Folder Named: {song.Album.Title} Will be created on your desktop.");
-                    Console.WriteLine($"--- Please Dont Modify Downloaded Folder on your own.");
-                    Console.WriteLine($"--- Song: {song.Title} will be downloaded on folder.");
-                    Console.WriteLine($"--- Make sure there are no other folder on you desktop with same folder name: {song.Album.Title}");
-
-
-                    string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                    string FolderPath = Path.Combine(desktopPath, $"{song.Album.Title}");
-
-                    if (!Directory.Exists(FolderPath))
-                    {
-                        Console.WriteLine();
-                        Console.WriteLine($"Creating Folder: {song.Album.Title} ...");
-                        Directory.CreateDirectory(FolderPath);
-                        Console.WriteLine();
-                        Console.WriteLine("Folder Created.");
-                        Console.WriteLine();
-                        Console.WriteLine("downloading Mp3 Files...");
-                        Console.WriteLine();
-                        var AllSongs = musicLibraryDb.Songs.Where(s => s.AlbumId == song.AlbumId).ToList();
-                        var client = new WebClient();
-                        foreach (var music in AllSongs)
-                        {
-                            var FileName = $"{music.Title}.mp3";
-                            var FilePath = Path.Combine(FolderPath, FileName);
-                            try
-                            {
-                                Console.WriteLine($"Downloading Music: {music.Title}...");
-                                client.DownloadFile(music.MusicUrl, FilePath);
-                                Console.WriteLine($"Downloaded Music: {music.Title}");
-                                Console.WriteLine();
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine($"Exception: {ex.InnerException}");
-                            }
-                        }
-
-
-                        string SongFilePath = Path.Combine(FolderPath, $"{song.Title}.mp3");
-                        if (File.Exists(SongFilePath))
-                        {
-                            var LibVLC = new LibVLC();
-                            var media = new Media(LibVLC, SongFilePath);
-                            var Player = new MediaPlayer(media);
-                            Console.WriteLine();
-                            Console.WriteLine($"Album Name: {song.Album.Title}");
-                            Console.WriteLine();
-                            Console.WriteLine($"Playing Song: {song.Title}");
-                            Console.WriteLine();
-                            Console.WriteLine($"Artist: {song.Album.Artist.Name}");
-                            Console.WriteLine();
-                            Console.WriteLine($"Song Duration: {song.TimeSpan}");
-                            Player.Play();
-                            Console.ReadKey();
-                            Console.WriteLine($"Finished Playing {song.Title}");
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Folder Already Exists.");
-                        string SongFilePath = Path.Combine(FolderPath, $"{song.Title}.mp3");
-                        if (!File.Exists(SongFilePath))
-                        {
-                            Console.WriteLine($"Updating Folder: {song.Album.Title}");
-                            var client = new WebClient();
-                            try
-                            {
-                                client.DownloadFile(song.MusicUrl, SongFilePath);
-                                Console.WriteLine($"Downloaded Song: {song.Title}");
-                                Console.WriteLine($"Update Finished.");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine($"Exception: {ex.InnerException}");
-                            }
-
-                        }
-
-                        var LibVLC = new LibVLC();
-                        var media = new Media(LibVLC, SongFilePath);
-                        var Player = new MediaPlayer(media);
-                        Console.WriteLine();
-                        Console.WriteLine($"Album Name: {song.Album.Title}");
-                        Console.WriteLine();
-                        Console.WriteLine($"Playing Song: {song.Title}");
-                        Console.WriteLine();
-                        Console.WriteLine($"Artist: {song.Album.Artist.Name}");
-                        Console.WriteLine();
-                        Console.WriteLine($"Song Duration: {song.TimeSpan}");
-                        Player.Play();
-                        Console.ReadKey();
-                        Player.Stop();
-                        Console.WriteLine($"Finished Playing {song.Title}");
-                        return;
-
-                    }
-
-                }
-                else
-                {
-                    Console.WriteLine($"Song with provided id {SongIdValue} was not found.");
+                    Console.WriteLine($"Playing Song: {song.Title} - Song Artist: {song.Album.Artist.Name}");
+                    Console.WriteLine($"Timespan: {song.TimeSpan}");
+                    mediaPlayer2.Play();
+                    Console.ReadKey();
+                    mediaPlayer2.Stop();
+                    Console.WriteLine("Stopped Playing.");
                     return;
                 }
-
-            }
-            else
-            {
-                Console.WriteLine("Invalid Song Id Input.");
+                client.DownloadFile(song.MusicUrl, DownloadedSong);
+                Console.WriteLine("Downloading Song...");
+                Media media = new Media(libVLC, DownloadedSong);
+                MediaPlayer mediaPlayer = new MediaPlayer(media);
+                Console.WriteLine();
+                Console.WriteLine($"Playing Song: {song.Title} - Song Artist: {song.Album.Artist.Name}");
+                Console.WriteLine($"Timespan: {song.TimeSpan}");
+                mediaPlayer.Play();
+                Console.ReadKey();
+                mediaPlayer.Stop();
+                Console.WriteLine("Stopped Playing.");
                 return;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.InnerException);
             }
 
 
@@ -259,6 +182,17 @@ namespace MusicLibrary
         public void UpdateSong()
         {
             Console.Clear();
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            var SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
+
+            if (!File.Exists(SystemLogsFile))
+            {
+                Console.WriteLine("Creating system logs file on your desktop.");
+                FileStream fs = File.Create(SystemLogsFile);
+                fs.Close();
+                Console.WriteLine("Created System logs.");
+
+            }
             Console.WriteLine("Provide Song Id.");
             int SongId;
             if (!int.TryParse(Console.ReadLine(), out SongId))
@@ -323,35 +257,6 @@ namespace MusicLibrary
                     return;
                 }
 
-                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                string FolderPath = Path.Combine(desktopPath, $"{song.Album.Title}");
-                var SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
-
-                if (!File.Exists(SystemLogsFile))
-                {
-                    Console.WriteLine("Creating system logs file on your desktop.");
-                    FileStream fs = File.Create(SystemLogsFile);
-                    fs.Close();
-                    Console.WriteLine("Created System logs.");
-
-                }
-                if (Directory.Exists(FolderPath))
-                {
-                    var FileName = $"{song.Title}.mp3";
-                    var FilePath = Path.Combine(FolderPath, FileName);
-
-                    if (File.Exists(FilePath))
-                    {
-                        var NewFileName = $"{NewSongtTitle}.mp3";
-                        var NewFilePath = Path.Combine(FolderPath, NewFileName);
-                        File.Move(FilePath, NewFilePath);
-                        Console.WriteLine("Updated Song in Folder.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("File Doesn't Exists.");
-                    }
-                }
 
                 string logEntry = $"{Environment.NewLine} {DateTime.Now}: Updated Song - {song.Title} in Album - {song.Album.Title}";
                 File.AppendAllText(SystemLogsFile, logEntry);
@@ -404,6 +309,15 @@ namespace MusicLibrary
         public void DeleteSong()
         {
             Console.Clear();
+            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            var SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
+            if (!File.Exists(SystemLogsFile))
+            {
+                Console.WriteLine("Creating system logs file on your desktop.");
+                FileStream fs = File.Create(SystemLogsFile);
+                fs.Close();
+                Console.WriteLine("Created System logs.");
+            }
             Console.WriteLine("Provide id of song to delete:");
             int SongIdValue;
             if (!int.TryParse(Console.ReadLine(), out SongIdValue))
@@ -420,26 +334,7 @@ namespace MusicLibrary
             {
                 try
                 {
-                    var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                    var FolderPath = Path.Combine(desktopPath, $"{song.Album.Title}");
-                    var SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
-                    if (!File.Exists(SystemLogsFile))
-                    {
-                        Console.WriteLine("Creating system logs file on your desktop.");
-                        FileStream fs = File.Create(SystemLogsFile);
-                        fs.Close();
-                        Console.WriteLine("Created System logs.");
-                    }
-                    if (Directory.Exists(FolderPath))
-                    {
-                        var FileName = $"{song.Title}.mp3";
-                        var FilePath = Path.Combine(FolderPath, FileName);
-                        if (File.Exists(FilePath))
-                        {
-                            File.Delete(FilePath);
-                            Console.WriteLine($"Deleted Song From Folder.");
-                        }
-                    }
+
                     musicLibraryDb.Songs.Remove(song);
                     musicLibraryDb.SaveChanges();
                     string logEntry = $"{Environment.NewLine} {DateTime.Now}: Deleted Song - {song.Title} in Album - {song.Album.Title}";

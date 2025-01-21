@@ -114,12 +114,6 @@ namespace MusicLibrary
             {
                 if (AlbumToRemove != null)
                 {
-                    string FolderPath = Path.Combine(desktopPath, $"{AlbumToRemove.Title}");
-                    if (Directory.Exists(FolderPath))
-                    {
-                        Directory.Delete(FolderPath, true);
-                        Console.WriteLine($"Removed Folder: {AlbumToRemove.Title}");
-                    }
                     musicLibraryDb.Albums.Remove(AlbumToRemove);
                     musicLibraryDb.SaveChanges();
                     string logEntry = $"{Environment.NewLine} {DateTime.Now}: Deleted Album - {AlbumToRemove.Title} - Artist: {AlbumToRemove.Artist.Name}";
@@ -200,17 +194,9 @@ namespace MusicLibrary
                 }
 
 
-                string FolderPath = Path.Combine(desktopPath, AlbumToUpdate.Title);
-                string NewFolderPath = Path.Combine(desktopPath, TitleInput);
+
                 try
                 {
-
-                    if (Directory.Exists(FolderPath))
-                    {
-
-                        Directory.Move(FolderPath, NewFolderPath);
-                        Console.WriteLine("Updated Folder.");
-                    }
                     AlbumToUpdate.Title = TitleInput;
                     AlbumToUpdate.ReleaseYear = ReleaseYearValue;
                     AlbumToUpdate.Genre = GenreInput;
