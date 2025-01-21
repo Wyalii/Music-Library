@@ -44,8 +44,8 @@ namespace MusicLibrary
                 foreach (var album in AllAlbums)
                 {
                     Console.WriteLine();
-                    Console.WriteLine($"Genre: {album.Genre}, Rating: {album.Rating}");
                     Console.WriteLine($"Album: {album.Title}");
+                    Console.WriteLine($"Genre: {album.Genre}, Rating: {album.Rating}");
                     Console.WriteLine();
                     Console.WriteLine();
                 }

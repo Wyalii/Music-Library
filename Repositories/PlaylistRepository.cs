@@ -12,7 +12,15 @@ namespace Music_Library
         public void CreatePlayList()
         {
             Console.Clear();
-
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
+            if (!File.Exists(SystemLogsFile))
+            {
+                Console.WriteLine("Creating System Logs File...");
+                FileStream fs = File.Create(SystemLogsFile);
+                fs.Close();
+                Console.WriteLine("Created System Logs File on your desktop.");
+            }
             Console.WriteLine("Provide Playlist Name:");
             string NameInput = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(NameInput))
@@ -20,13 +28,15 @@ namespace Music_Library
                 Console.WriteLine("Invalid Name Input.");
                 return;
             }
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
             string PlaylistPath = Path.Combine(desktopPath, $"Playlist_{NameInput}");
             if (!Directory.Exists(PlaylistPath))
             {
                 Console.WriteLine($"Creating a Playlist: {NameInput} ...");
                 Directory.CreateDirectory(PlaylistPath);
                 Console.WriteLine("Created Folder.");
+                string logEntry = $"{Environment.NewLine} {DateTime.Now}: Created Playlist - Playlist_{NameInput}";
+                File.AppendAllText(SystemLogsFile, logEntry);
                 return;
             }
 
@@ -40,6 +50,15 @@ namespace Music_Library
         public void AddSongToPlaylist()
         {
             Console.Clear();
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
+            if (!File.Exists(SystemLogsFile))
+            {
+                Console.WriteLine("Creating System Logs File...");
+                FileStream fs = File.Create(SystemLogsFile);
+                fs.Close();
+                Console.WriteLine("Created System Logs File on your desktop.");
+            }
             Console.WriteLine("Name of playlist is case sensitive!!");
             Console.WriteLine("Provide Name of your Playlist:");
             string PlaylistName = Console.ReadLine();
@@ -50,7 +69,7 @@ namespace Music_Library
                 return;
             }
 
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
             var PlaylistPath = Path.Combine(desktopPath, PlaylistName);
 
             if (!Directory.Exists(PlaylistPath))
@@ -85,6 +104,8 @@ namespace Music_Library
                     Console.WriteLine($"Downloading Song: {song.Title} ...");
                     client.DownloadFile(song.MusicUrl, FilePath);
                     Console.WriteLine($"Download Finished.");
+                    string logEntry = $"{Environment.NewLine} {DateTime.Now}: Added Song at - {FilePath}";
+                    File.AppendAllText(SystemLogsFile, logEntry);
                     return;
                 }
                 catch (Exception ex)

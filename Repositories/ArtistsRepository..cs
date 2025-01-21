@@ -9,6 +9,15 @@ namespace MusicLibrary
         public void AddNewArtist()
         {
             Console.Clear();
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
+            if (!File.Exists(SystemLogsFile))
+            {
+                Console.WriteLine("Creating System Logs File...");
+                FileStream fs = File.Create(SystemLogsFile);
+                fs.Close();
+                Console.WriteLine("Created System Logs File on your desktop.");
+            }
             Console.WriteLine("Provide new Artist's Name: ");
             string NewArtistName = Console.ReadLine();
             Console.WriteLine("Provide new Artist's Country:");
@@ -45,66 +54,79 @@ namespace MusicLibrary
             }
 
             var ExistsOrNot = musicLibraryDb.Artists.FirstOrDefault(a => a.Name.ToLower() == NewArtistName.ToLower());
-            if (ExistsOrNot == null)
+            try
             {
-                Artist NewArtist = new Artist { Name = NewArtistName, Country = NewArtistCountry, Genre = NewArtistGenre, Description = NewArtistDescription };
-                musicLibraryDb.Artists.Add(NewArtist);
-                musicLibraryDb.SaveChanges();
-                Console.WriteLine($"Added new artist: {NewArtist.Name}");
-                Console.WriteLine();
-                Console.WriteLine($"Now Fill {NewArtist.Name}'s Details:");
-                Console.WriteLine();
-                Console.WriteLine("FormationYear: ");
-                string FormationYearInput = Console.ReadLine();
-                int FromationYearValue;
-
-                if (string.IsNullOrWhiteSpace(FormationYearInput) || !int.TryParse(FormationYearInput, out FromationYearValue))
+                if (ExistsOrNot == null)
                 {
-                    Console.WriteLine("Invalid Formation Year Input.");
+                    Artist NewArtist = new Artist { Name = NewArtistName, Country = NewArtistCountry, Genre = NewArtistGenre, Description = NewArtistDescription };
+                    musicLibraryDb.Artists.Add(NewArtist);
+                    musicLibraryDb.SaveChanges();
+                    Console.WriteLine($"Added new artist: {NewArtist.Name}");
+                    Console.WriteLine();
+                    Console.WriteLine($"Now Fill {NewArtist.Name}'s Details:");
+                    Console.WriteLine();
+                    Console.WriteLine("FormationYear: ");
+                    string FormationYearInput = Console.ReadLine();
+                    int FromationYearValue;
+
+                    if (string.IsNullOrWhiteSpace(FormationYearInput) || !int.TryParse(FormationYearInput, out FromationYearValue))
+                    {
+                        Console.WriteLine("Invalid Formation Year Input.");
+                        return;
+                    }
+
+                    Console.WriteLine();
+                    Console.WriteLine("Website: ");
+                    string WebsiteInput = Console.ReadLine();
+
+                    if (string.IsNullOrWhiteSpace(WebsiteInput))
+                    {
+                        Console.WriteLine("Invalid Website Input.");
+                        return;
+                    }
+
+                    Console.WriteLine();
+                    Console.WriteLine("Total Albums: ");
+                    string TotalAlbumsInput = Console.ReadLine();
+                    int TotalAlbumsValue;
+                    if (string.IsNullOrWhiteSpace(TotalAlbumsInput) || !int.TryParse(TotalAlbumsInput, out TotalAlbumsValue))
+                    {
+                        Console.WriteLine("Invalid Total Albums Input.");
+                        return;
+                    }
+
+                    Console.WriteLine();
+                    Console.WriteLine("Is Active: ");
+                    string IsActiveInput = Console.ReadLine();
+                    bool IsActiveValue;
+                    if (string.IsNullOrWhiteSpace(IsActiveInput) || !bool.TryParse(IsActiveInput, out IsActiveValue))
+                    {
+
+                        Console.WriteLine("Invalid Formation Year Input.");
+                        return;
+                    }
+
+
+                    ArtistDetails NewArtistsDetails = new ArtistDetails { ArtistId = NewArtist.Id, FormationYear = FromationYearValue, Website = WebsiteInput, TotalAlbums = TotalAlbumsValue, IsActive = IsActiveValue };
+                    NewArtist.ArtistDetails = NewArtistsDetails;
+                    musicLibraryDb.SaveChanges();
+                    string logEntry = $"{Environment.NewLine} {DateTime.Now}: Created Artist - {NewArtist.Name}";
+                    File.AppendAllText(SystemLogsFile, logEntry);
+
+                    Console.WriteLine($"Success, Filled {NewArtist.Name}'s Details, Finished Adding Artist to database. ");
+                    return;
+
+
+                }
+                else
+                {
+                    Console.WriteLine($"Artist with provided name: {NewArtistName}, already exists.");
                     return;
                 }
-
-                Console.WriteLine();
-                Console.WriteLine("Website: ");
-                string WebsiteInput = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(WebsiteInput))
-                {
-                    Console.WriteLine("Invalid Website Input.");
-                    return;
-                }
-
-                Console.WriteLine();
-                Console.WriteLine("Total Albums: ");
-                string TotalAlbumsInput = Console.ReadLine();
-                int TotalAlbumsValue;
-                if (string.IsNullOrWhiteSpace(TotalAlbumsInput) || !int.TryParse(TotalAlbumsInput, out TotalAlbumsValue))
-                {
-                    Console.WriteLine("Invalid Total Albums Input.");
-                    return;
-                }
-
-                Console.WriteLine();
-                Console.WriteLine("Is Active: ");
-                string IsActiveInput = Console.ReadLine();
-                bool IsActiveValue;
-                if (string.IsNullOrWhiteSpace(IsActiveInput) || !bool.TryParse(IsActiveInput, out IsActiveValue))
-                {
-
-                    Console.WriteLine("Invalid Formation Year Input.");
-                    return;
-                }
-
-                ArtistDetails NewArtistsDetails = new ArtistDetails { ArtistId = NewArtist.Id, FormationYear = FromationYearValue, Website = WebsiteInput, TotalAlbums = TotalAlbumsValue, IsActive = IsActiveValue };
-                NewArtist.ArtistDetails = NewArtistsDetails;
-                musicLibraryDb.SaveChanges();
-                Console.WriteLine($"Success, Filled {NewArtist.Name}'s Details, Finished Adding Artist to database. ");
-                return;
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine($"Artist with provided name: {NewArtistName}, already exists.");
-                return;
+                Console.WriteLine(ex.InnerException);
             }
 
         }
@@ -112,24 +134,43 @@ namespace MusicLibrary
         public void RemoveArtist()
         {
             Console.Clear();
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
+            if (!File.Exists(SystemLogsFile))
+            {
+                Console.WriteLine("Creating System Logs File...");
+                FileStream fs = File.Create(SystemLogsFile);
+                fs.Close();
+                Console.WriteLine("Created System Logs File on your desktop.");
+            }
+
             Console.WriteLine("Provide Id of Artist to remove:");
             string IdInput = Console.ReadLine();
             int IdValue;
 
             if (!string.IsNullOrWhiteSpace(IdInput) && int.TryParse(IdInput, out IdValue))
             {
-                var ExistsOrNot = musicLibraryDb.Artists.FirstOrDefault(a => a.Id == IdValue);
-                if (ExistsOrNot != null)
+                try
                 {
-                    musicLibraryDb.Artists.Remove(ExistsOrNot);
-                    musicLibraryDb.SaveChanges();
-                    Console.WriteLine($"Success, Removed Artist: {ExistsOrNot.Name}");
-                    return;
+                    var ExistsOrNot = musicLibraryDb.Artists.FirstOrDefault(a => a.Id == IdValue);
+                    if (ExistsOrNot != null)
+                    {
+                        musicLibraryDb.Artists.Remove(ExistsOrNot);
+                        musicLibraryDb.SaveChanges();
+                        string logEntry = $"{Environment.NewLine} {DateTime.Now}: Removed Artist - {ExistsOrNot.Name}";
+                        File.AppendAllText(SystemLogsFile, logEntry);
+                        Console.WriteLine($"Success, Removed Artist: {ExistsOrNot.Name}");
+                        return;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Artist with provided Id: {IdValue}, doesn't exists");
+                        return;
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"Artist with provided Id: {IdValue}, doesn't exists");
-                    return;
+                    Console.WriteLine(ex.InnerException);
                 }
             }
             else
@@ -142,108 +183,127 @@ namespace MusicLibrary
         public void UpdateArtist()
         {
             Console.Clear();
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
+            if (!File.Exists(SystemLogsFile))
+            {
+                Console.WriteLine("Creating System Logs File...");
+                FileStream fs = File.Create(SystemLogsFile);
+                fs.Close();
+                Console.WriteLine("Created System Logs File on your desktop.");
+            }
+
             Console.WriteLine("Provide Artist Id to update: ");
             string IdInput = Console.ReadLine();
             int IdValue;
             if (!string.IsNullOrWhiteSpace(IdInput) && int.TryParse(IdInput, out IdValue))
             {
-                var ExistsOrNot = musicLibraryDb.Artists.Include(a => a.ArtistDetails).FirstOrDefault(a => a.Id == IdValue);
-                if (ExistsOrNot != null)
+                try
                 {
-                    Console.WriteLine("Wirte Artist's New name:");
-                    string NewName = Console.ReadLine();
-
-                    if (string.IsNullOrWhiteSpace(NewName))
+                    var ExistsOrNot = musicLibraryDb.Artists.Include(a => a.ArtistDetails).FirstOrDefault(a => a.Id == IdValue);
+                    if (ExistsOrNot != null)
                     {
-                        Console.WriteLine("Wrong Name input.");
+                        Console.WriteLine("Wirte Artist's New name:");
+                        string NewName = Console.ReadLine();
+
+                        if (string.IsNullOrWhiteSpace(NewName))
+                        {
+                            Console.WriteLine("Wrong Name input.");
+                            return;
+                        }
+
+                        Console.WriteLine("Write Artist's New Genre:");
+                        string NewGenre = Console.ReadLine();
+
+                        if (string.IsNullOrWhiteSpace(NewGenre))
+                        {
+                            Console.WriteLine("Wrong Genre input.");
+                            return;
+                        }
+
+                        Console.WriteLine("Write Artist's New Country:");
+                        string NewCountry = Console.ReadLine();
+                        if (string.IsNullOrWhiteSpace(NewCountry))
+                        {
+                            Console.WriteLine("Wrong Country input.");
+                            return;
+                        }
+
+                        Console.WriteLine("Write Artist's New Total Albums: ");
+                        string TotalAlbumsInput = Console.ReadLine();
+                        int TotalAlbumsValue;
+
+                        if (string.IsNullOrWhiteSpace(TotalAlbumsInput) || !int.TryParse(TotalAlbumsInput, out TotalAlbumsValue))
+                        {
+                            Console.WriteLine("Invalid Total Albums Input.");
+                            return;
+                        }
+
+                        Console.Write("Write Artist's new Formation Year:");
+                        string FormationYearInput = Console.ReadLine();
+                        int FormationYearValue;
+
+                        if (string.IsNullOrWhiteSpace(FormationYearInput) || !int.TryParse(FormationYearInput, out FormationYearValue))
+                        {
+                            Console.WriteLine("Wrong Formation Year input.");
+                            return;
+                        }
+
+                        Console.Write("Write Artist's new Website:");
+                        string WebsiteInput = Console.ReadLine();
+
+                        if (string.IsNullOrWhiteSpace(WebsiteInput))
+                        {
+                            Console.WriteLine("Wrong Website input.");
+                            return;
+                        }
+
+                        Console.Write("Write Artist's new Is Active:");
+                        string IsActiveInput = Console.ReadLine();
+                        bool IsActiveValue;
+
+                        if (string.IsNullOrWhiteSpace(IsActiveInput) || !bool.TryParse(IsActiveInput, out IsActiveValue))
+                        {
+                            Console.WriteLine("Wrong Is Active input.");
+                            return;
+                        }
+
+
+                        Console.WriteLine("Write Artist's New Description:");
+                        string NewDescription = Console.ReadLine();
+
+                        if (string.IsNullOrWhiteSpace(NewDescription))
+                        {
+                            Console.WriteLine("Wrong Name input.");
+                            return;
+                        }
+
+
+
+                        ExistsOrNot.Name = NewName;
+                        ExistsOrNot.Country = NewCountry;
+                        ExistsOrNot.Genre = NewGenre;
+                        ExistsOrNot.Description = NewDescription;
+
+                        ExistsOrNot.ArtistDetails.TotalAlbums = TotalAlbumsValue;
+                        ExistsOrNot.ArtistDetails.FormationYear = FormationYearValue;
+                        ExistsOrNot.ArtistDetails.IsActive = IsActiveValue;
+                        ExistsOrNot.ArtistDetails.Website = WebsiteInput;
+                        musicLibraryDb.SaveChanges();
+                        string logEntry = $"{Environment.NewLine} {DateTime.Now}: Updated Artist - {ExistsOrNot.Name}";
+                        File.AppendAllText(SystemLogsFile, logEntry);
+                        Console.WriteLine("Success, Updated Artist!");
                         return;
                     }
-
-                    Console.WriteLine("Write Artist's New Genre:");
-                    string NewGenre = Console.ReadLine();
-
-                    if (string.IsNullOrWhiteSpace(NewGenre))
+                    else
                     {
-                        Console.WriteLine("Wrong Genre input.");
+                        Console.WriteLine($"Artist with provided Id: {IdValue}, doesn't exists");
                         return;
                     }
-
-                    Console.WriteLine("Write Artist's New Country:");
-                    string NewCountry = Console.ReadLine();
-                    if (string.IsNullOrWhiteSpace(NewCountry))
-                    {
-                        Console.WriteLine("Wrong Country input.");
-                        return;
-                    }
-
-                    Console.WriteLine("Write Artist's New Total Albums: ");
-                    string TotalAlbumsInput = Console.ReadLine();
-                    int TotalAlbumsValue;
-
-                    if (string.IsNullOrWhiteSpace(TotalAlbumsInput) || !int.TryParse(TotalAlbumsInput, out TotalAlbumsValue))
-                    {
-                        Console.WriteLine("Invalid Total Albums Input.");
-                        return;
-                    }
-
-                    Console.Write("Write Artist's new Formation Year:");
-                    string FormationYearInput = Console.ReadLine();
-                    int FormationYearValue;
-
-                    if (string.IsNullOrWhiteSpace(FormationYearInput) || !int.TryParse(FormationYearInput, out FormationYearValue))
-                    {
-                        Console.WriteLine("Wrong Formation Year input.");
-                        return;
-                    }
-
-                    Console.Write("Write Artist's new Website:");
-                    string WebsiteInput = Console.ReadLine();
-
-                    if (string.IsNullOrWhiteSpace(WebsiteInput))
-                    {
-                        Console.WriteLine("Wrong Website input.");
-                        return;
-                    }
-
-                    Console.Write("Write Artist's new Is Active:");
-                    string IsActiveInput = Console.ReadLine();
-                    bool IsActiveValue;
-
-                    if (string.IsNullOrWhiteSpace(IsActiveInput) || !bool.TryParse(IsActiveInput, out IsActiveValue))
-                    {
-                        Console.WriteLine("Wrong Is Active input.");
-                        return;
-                    }
-
-
-                    Console.WriteLine("Write Artist's New Description:");
-                    string NewDescription = Console.ReadLine();
-
-                    if (string.IsNullOrWhiteSpace(NewDescription))
-                    {
-                        Console.WriteLine("Wrong Name input.");
-                        return;
-                    }
-
-
-
-                    ExistsOrNot.Name = NewName;
-                    ExistsOrNot.Country = NewCountry;
-                    ExistsOrNot.Genre = NewGenre;
-                    ExistsOrNot.Description = NewDescription;
-
-                    ExistsOrNot.ArtistDetails.TotalAlbums = TotalAlbumsValue;
-                    ExistsOrNot.ArtistDetails.FormationYear = FormationYearValue;
-                    ExistsOrNot.ArtistDetails.IsActive = IsActiveValue;
-                    ExistsOrNot.ArtistDetails.Website = WebsiteInput;
-                    musicLibraryDb.SaveChanges();
-                    Console.WriteLine("Success, Updated Artist!");
-                    return;
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"Artist with provided Id: {IdValue}, doesn't exists");
-                    return;
+                    Console.WriteLine(ex.InnerException);
                 }
             }
             else

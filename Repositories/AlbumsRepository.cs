@@ -8,7 +8,16 @@ namespace MusicLibrary
         MusicLibraryDb musicLibraryDb = new MusicLibraryDb();
         public void AddAlbum()
         {
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
             Console.Clear();
+            if (!File.Exists(SystemLogsFile))
+            {
+                Console.WriteLine("Creating system logs file...");
+                FileStream fs = File.Create(SystemLogsFile);
+                Console.WriteLine("Created system logs file.");
+                Console.WriteLine();
+            }
             Console.WriteLine("Provide Artist's Id: ");
             string IdInput = Console.ReadLine();
             int IdValue;
@@ -50,20 +59,30 @@ namespace MusicLibrary
                 return;
             }
 
-            var artist = musicLibraryDb.Artists.FirstOrDefault(a => a.Id == IdValue);
+            var artist = musicLibraryDb.Artists.Include(a => a.Albums).FirstOrDefault(a => a.Id == IdValue);
 
-            if (artist != null)
+            try
             {
-                Album NewAlbum = new Album { ArtistId = artist.Id, Title = TitleInput, ReleaseYear = ReleaseYearValue, Genre = GenreInput, Rating = RatingValue };
-                musicLibraryDb.Albums.Add(NewAlbum);
-                musicLibraryDb.SaveChanges();
-                Console.WriteLine($"Added Album: {NewAlbum.Title}");
-                return;
+                if (artist != null)
+                {
+
+                    Album NewAlbum = new Album { ArtistId = artist.Id, Title = TitleInput, ReleaseYear = ReleaseYearValue, Genre = GenreInput, Rating = RatingValue };
+                    musicLibraryDb.Albums.Add(NewAlbum);
+                    musicLibraryDb.SaveChanges();
+                    string logEntry = $"{Environment.NewLine} {DateTime.Now}: Created Album - {NewAlbum.Title} - Artist: {artist.Name}";
+                    File.AppendAllText(SystemLogsFile, logEntry);
+                    Console.WriteLine($"Added Album: {NewAlbum.Title}");
+                    return;
+                }
+                else
+                {
+                    Console.WriteLine($"artist with provided id: {IdValue} coudn't be found.");
+                    return;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine($"artist with provided id: {IdValue} coudn't be found.");
-                return;
+                Console.WriteLine(ex.InnerException);
             }
 
 
@@ -72,6 +91,15 @@ namespace MusicLibrary
         public void RemoveAlbum()
         {
             Console.Clear();
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
+            if (!File.Exists(SystemLogsFile))
+            {
+                Console.WriteLine("Creating system logs file...");
+                FileStream fs = File.Create(SystemLogsFile);
+                Console.WriteLine("Created system logs file.");
+                Console.WriteLine();
+            }
             Console.WriteLine("Provide Id of album to remove: ");
             string IdInput = Console.ReadLine();
             int IdValue;
@@ -81,31 +109,49 @@ namespace MusicLibrary
                 return;
             }
 
-            var AlbumToRemove = musicLibraryDb.Albums.FirstOrDefault(a => a.Id == IdValue);
-            if (AlbumToRemove != null)
+            var AlbumToRemove = musicLibraryDb.Albums.Include(a => a.Artist).FirstOrDefault(a => a.Id == IdValue);
+            try
             {
-                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                string FolderPath = Path.Combine(desktopPath, $"{AlbumToRemove.Title}");
-                if (Directory.Exists(FolderPath))
+                if (AlbumToRemove != null)
                 {
-                    Directory.Delete(FolderPath, true);
-                    Console.WriteLine($"Removed Folder: {AlbumToRemove.Title}");
+                    string FolderPath = Path.Combine(desktopPath, $"{AlbumToRemove.Title}");
+                    if (Directory.Exists(FolderPath))
+                    {
+                        Directory.Delete(FolderPath, true);
+                        Console.WriteLine($"Removed Folder: {AlbumToRemove.Title}");
+                    }
+                    musicLibraryDb.Albums.Remove(AlbumToRemove);
+                    musicLibraryDb.SaveChanges();
+                    string logEntry = $"{Environment.NewLine} {DateTime.Now}: Deleted Album - {AlbumToRemove.Title} - Artist: {AlbumToRemove.Artist.Name}";
+                    File.AppendAllText(SystemLogsFile, logEntry);
+                    Console.WriteLine($"Removed Album from database: {AlbumToRemove.Title}");
+                    return;
                 }
-                musicLibraryDb.Albums.Remove(AlbumToRemove);
-                musicLibraryDb.SaveChanges();
-                Console.WriteLine($"Removed Album from database: {AlbumToRemove.Title}");
-                return;
+                else
+                {
+                    Console.WriteLine($"album with provided id: {IdValue} coudn't be found.");
+                    return;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine($"album with provided id: {IdValue} coudn't be found.");
-                return;
+                Console.WriteLine(ex.InnerException);
             }
         }
 
         public void UpdateAlbum()
         {
             Console.Clear();
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
+            if (!File.Exists(SystemLogsFile))
+            {
+                Console.WriteLine("Creating system logs file...");
+                FileStream fs = File.Create(SystemLogsFile);
+                Console.WriteLine("Created system logs file.");
+                Console.WriteLine();
+            }
+
             Console.WriteLine("Provide Id of album to update:  ");
             string IdInput = Console.ReadLine();
             int IdValue;
@@ -115,7 +161,7 @@ namespace MusicLibrary
                 return;
             }
 
-            var AlbumToUpdate = musicLibraryDb.Albums.FirstOrDefault(a => a.Id == IdValue);
+            var AlbumToUpdate = musicLibraryDb.Albums.Include(a => a.Artist).FirstOrDefault(a => a.Id == IdValue);
             if (AlbumToUpdate != null)
             {
 
@@ -153,7 +199,7 @@ namespace MusicLibrary
                     return;
                 }
 
-                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
                 string FolderPath = Path.Combine(desktopPath, AlbumToUpdate.Title);
                 string NewFolderPath = Path.Combine(desktopPath, TitleInput);
                 try
@@ -170,6 +216,8 @@ namespace MusicLibrary
                     AlbumToUpdate.Genre = GenreInput;
                     AlbumToUpdate.Rating = RatingValue;
                     musicLibraryDb.SaveChanges();
+                    string logEntry = $"{Environment.NewLine} {DateTime.Now}: Updated Album - {AlbumToUpdate.Title} - Artist: {AlbumToUpdate.Artist.Name}";
+                    File.AppendAllText(SystemLogsFile, logEntry);
 
                     Console.WriteLine("Success, Updated Album!");
                     return;
@@ -216,6 +264,15 @@ namespace MusicLibrary
         public void UpdateAlbumsRating()
         {
             Console.Clear();
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
+            if (!File.Exists(SystemLogsFile))
+            {
+                Console.WriteLine("Creating system logs file...");
+                FileStream fs = File.Create(SystemLogsFile);
+                Console.WriteLine("Created system logs file.");
+                Console.WriteLine();
+            }
             Console.WriteLine("Provide id of album: ");
             string IdInput = Console.ReadLine();
             decimal IdValue;
@@ -225,21 +282,30 @@ namespace MusicLibrary
                 return;
             }
 
-            var album = musicLibraryDb.Albums.FirstOrDefault(a => a.Id == IdValue);
+            var album = musicLibraryDb.Albums.Include(a => a.Artist).FirstOrDefault(a => a.Id == IdValue);
             if (album != null)
             {
-                Console.WriteLine("Provide New Rating: ");
-                string RatingInput = Console.ReadLine();
-                decimal RatingValue;
-                if (string.IsNullOrWhiteSpace(RatingInput) || !decimal.TryParse(RatingInput, out RatingValue))
+                try
                 {
-                    Console.WriteLine("Invalid Rating Input.");
+                    Console.WriteLine("Provide New Rating: ");
+                    string RatingInput = Console.ReadLine();
+                    decimal RatingValue;
+                    if (string.IsNullOrWhiteSpace(RatingInput) || !decimal.TryParse(RatingInput, out RatingValue))
+                    {
+                        Console.WriteLine("Invalid Rating Input.");
+                        return;
+                    }
+                    album.Rating = RatingValue;
+                    musicLibraryDb.SaveChanges();
+                    string logEntry = $"{Environment.NewLine} {DateTime.Now}: Updated Album Rating - {album.Title} - Artist: {album.Artist.Name}";
+                    File.AppendAllText(SystemLogsFile, logEntry);
+                    Console.WriteLine("Updated Rating!");
                     return;
                 }
-                album.Rating = RatingValue;
-                musicLibraryDb.SaveChanges();
-                Console.WriteLine("Updated Rating!");
-                return;
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.InnerException);
+                }
             }
             else
             {

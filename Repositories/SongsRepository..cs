@@ -13,6 +13,15 @@ namespace MusicLibrary
         {
             Console.Clear();
             Console.WriteLine("Provide id of an album: ");
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
+            if (!File.Exists(SystemLogsFile))
+            {
+                Console.WriteLine("Creating System Logs File...");
+                FileStream fs = File.Create(SystemLogsFile);
+                fs.Close();
+                Console.WriteLine("Created System Logs File on your desktop.");
+            }
             string AlbumIdInput = Console.ReadLine();
             int AlbumIdValue;
 
@@ -87,8 +96,10 @@ namespace MusicLibrary
                     Song NewSong = new Song { AlbumId = AlbumIdValue, Title = NewSongtTitle, TimeSpan = TimeSpanValue, MusicUrl = MusicUrlInput, TrackNumber = TrackNumberValue, TimesPlayed = TimesPlayedValue };
                     musicLibraryDb.Songs.Add(NewSong);
                     musicLibraryDb.SaveChanges();
-                    string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                     string FolderPath = Path.Combine(desktopPath, $"{NewSong.Album.Title}");
+                    string logEntry = $"{Environment.NewLine} {DateTime.Now}: Created Song - {NewSong.Title} in Album - {album.Title}";
+                    File.AppendAllText(SystemLogsFile, logEntry);
+
                     if (Directory.Exists(FolderPath))
                     {
                         var client = new WebClient();
@@ -245,12 +256,16 @@ namespace MusicLibrary
 
 
         }
-
         public void UpdateSong()
         {
             Console.Clear();
             Console.WriteLine("Provide Song Id.");
-            int SongId = int.Parse(Console.ReadLine());
+            int SongId;
+            if (!int.TryParse(Console.ReadLine(), out SongId))
+            {
+                Console.WriteLine("Invalid Song Id Input.");
+                return;
+            }
             var song = musicLibraryDb.Songs.Include(s => s.Album).Include(s => s.Album.Artist).FirstOrDefault(s => s.Id == SongId);
             if (song != null)
             {
@@ -310,6 +325,16 @@ namespace MusicLibrary
 
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 string FolderPath = Path.Combine(desktopPath, $"{song.Album.Title}");
+                var SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
+
+                if (!File.Exists(SystemLogsFile))
+                {
+                    Console.WriteLine("Creating system logs file on your desktop.");
+                    FileStream fs = File.Create(SystemLogsFile);
+                    fs.Close();
+                    Console.WriteLine("Created System logs.");
+
+                }
                 if (Directory.Exists(FolderPath))
                 {
                     var FileName = $"{song.Title}.mp3";
@@ -327,10 +352,9 @@ namespace MusicLibrary
                         Console.WriteLine("File Doesn't Exists.");
                     }
                 }
-                else
-                {
-                    Console.WriteLine("Folder Doesn't Exists.");
-                }
+
+                string logEntry = $"{Environment.NewLine} {DateTime.Now}: Updated Song - {song.Title} in Album - {song.Album.Title}";
+                File.AppendAllText(SystemLogsFile, logEntry);
                 song.Title = NewSongtTitle;
                 song.MusicUrl = NewSongUrl;
                 song.TimeSpan = NewSongTimespan;
@@ -398,6 +422,14 @@ namespace MusicLibrary
                 {
                     var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                     var FolderPath = Path.Combine(desktopPath, $"{song.Album.Title}");
+                    var SystemLogsFile = Path.Combine(desktopPath, "music_system_log.txt");
+                    if (!File.Exists(SystemLogsFile))
+                    {
+                        Console.WriteLine("Creating system logs file on your desktop.");
+                        FileStream fs = File.Create(SystemLogsFile);
+                        fs.Close();
+                        Console.WriteLine("Created System logs.");
+                    }
                     if (Directory.Exists(FolderPath))
                     {
                         var FileName = $"{song.Title}.mp3";
@@ -410,6 +442,8 @@ namespace MusicLibrary
                     }
                     musicLibraryDb.Songs.Remove(song);
                     musicLibraryDb.SaveChanges();
+                    string logEntry = $"{Environment.NewLine} {DateTime.Now}: Deleted Song - {song.Title} in Album - {song.Album.Title}";
+                    File.AppendAllText(SystemLogsFile, logEntry);
                     Console.WriteLine($"removed song: {song.Title}");
                     return;
                 }

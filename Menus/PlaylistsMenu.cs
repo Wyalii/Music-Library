@@ -38,6 +38,10 @@ namespace Music_Library
                     case 3:
                         playlistRepository.PlayPlaylistSongs();
                         break;
+
+                    case 0:
+                        start = false;
+                        break;
                 }
             } while (start);
         }
