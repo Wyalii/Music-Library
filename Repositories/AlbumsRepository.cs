@@ -194,7 +194,7 @@ namespace MusicLibrary
             if (AllAlbums == null)
             {
                 Console.WriteLine("No Albums Added.");
-                return;
+
             }
             else
             {
@@ -208,7 +208,7 @@ namespace MusicLibrary
                     Console.WriteLine();
                     Console.WriteLine();
                 }
-                return;
+
             }
 
         }

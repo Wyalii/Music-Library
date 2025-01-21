@@ -9,7 +9,7 @@ namespace Music_Library
         SongsRepository songsRepository = new SongsRepository();
         public void ShowSongsMenu()
         {
-
+            start = true; ;
             Console.Clear();
 
 
@@ -66,6 +66,7 @@ namespace Music_Library
                         start = false;
                         break;
                 }
+
             } while (start);
         }
     }

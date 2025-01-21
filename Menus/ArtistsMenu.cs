@@ -8,6 +8,7 @@ namespace Music_Library
         bool start = true;
         public void ShowArtistsMenu()
         {
+            start = true;
             Console.Clear();
             do
             {
