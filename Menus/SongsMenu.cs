@@ -6,7 +6,11 @@ namespace Music_Library
     public class SongsMenu
     {
         bool start = true;
-        SongsRepository songsRepository = new SongsRepository();
+        private readonly SongsRepository _songsRepository;
+        public SongsMenu(SongsRepository songsRepository)
+        {
+            _songsRepository = songsRepository;
+        }
         public void ShowSongsMenu()
         {
             start = true; ;
@@ -38,23 +42,23 @@ namespace Music_Library
                 {
 
                     case 1:
-                        songsRepository.AddSong();
+                        _songsRepository.AddSong();
                         break;
 
                     case 2:
-                        songsRepository.UpdateSong();
+                        _songsRepository.UpdateSong();
                         break;
 
                     case 3:
-                        songsRepository.DeleteSong();
+                        _songsRepository.DeleteSong();
                         break;
 
                     case 4:
-                        songsRepository.PlayMusic();
+                        _songsRepository.PlayMusic();
                         break;
 
                     case 5:
-                        songsRepository.PrintSongs();
+                        _songsRepository.PrintSongs();
                         break;
 
                     case 0:

@@ -4,7 +4,11 @@ namespace Music_Library
 {
     public class AlbumsMenu
     {
-        AlbumsRepository albumsRepository = new AlbumsRepository();
+        private readonly AlbumsRepository _albumsRepository;
+        public AlbumsMenu(AlbumsRepository albumsRepository)
+        {
+            _albumsRepository = albumsRepository ?? throw new ArgumentNullException(nameof(albumsRepository));
+        }
         bool start = true;
         public void ShowAlbumsMenu()
         {
@@ -34,23 +38,23 @@ namespace Music_Library
                 switch (ActionValue)
                 {
                     case 1:
-                        albumsRepository.AddAlbum();
+                        _albumsRepository.AddAlbum();
                         break;
 
                     case 2:
-                        albumsRepository.UpdateAlbum();
+                        _albumsRepository.UpdateAlbum();
                         break;
 
                     case 3:
-                        albumsRepository.RemoveAlbum();
+                        _albumsRepository.RemoveAlbum();
                         break;
 
                     case 4:
-                        albumsRepository.PrintAlbums();
+                        _albumsRepository.PrintAlbums();
                         break;
 
                     case 5:
-                        albumsRepository.UpdateAlbumsRating();
+                        _albumsRepository.UpdateAlbumsRating();
                         break;
 
                     default:

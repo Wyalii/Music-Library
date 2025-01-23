@@ -1,10 +1,15 @@
 namespace Music_Library
 {
-    public class PlaylistsMenu()
+    public class PlaylistsMenu
     {
+        private readonly PlaylistRepository _playlistRepository;
+        public PlaylistsMenu(PlaylistRepository playlistRepository)
+        {
+            _playlistRepository = playlistRepository ?? throw new ArgumentNullException(nameof(PlaylistRepository));
+        }
         public void ShowPlaylistsMenu()
         {
-            PlaylistRepository playlistRepository = new PlaylistRepository();
+
             bool start = true;
             Console.Clear();
             do
@@ -28,15 +33,15 @@ namespace Music_Library
                 switch (ActionValue)
                 {
                     case 1:
-                        playlistRepository.CreatePlayList();
+                        _playlistRepository.CreatePlayList();
                         break;
 
                     case 2:
-                        playlistRepository.AddSongToPlaylist();
+                        _playlistRepository.AddSongToPlaylist();
                         break;
 
                     case 3:
-                        playlistRepository.PlayPlaylistSongs();
+                        _playlistRepository.PlayPlaylistSongs();
                         break;
 
                     case 0:

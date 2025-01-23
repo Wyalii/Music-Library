@@ -4,7 +4,11 @@ namespace Music_Library
 {
     public class AnalitycsMenu
     {
-        AnalitycsRepository analitycsRepository = new AnalitycsRepository();
+        private readonly AnalitycsRepository _analitycsRepository;
+        public AnalitycsMenu(AnalitycsRepository analitycsRepository)
+        {
+            _analitycsRepository = analitycsRepository ?? throw new ArgumentNullException(nameof(analitycsRepository));
+        }
         bool start = true;
         public void ShowAnalitycsMenu()
         {
@@ -32,15 +36,15 @@ namespace Music_Library
                 switch (ActionValue)
                 {
                     case 1:
-                        analitycsRepository.PrintMostListenedSongs();
+                        _analitycsRepository.PrintMostListenedSongs();
                         break;
 
                     case 2:
-                        analitycsRepository.PrintGenreStatistics();
+                        _analitycsRepository.PrintGenreStatistics();
                         break;
 
                     case 3:
-                        analitycsRepository.PrintArtistsRatings();
+                        _analitycsRepository.PrintArtistsRatings();
                         break;
 
                     case 0:

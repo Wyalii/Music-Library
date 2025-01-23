@@ -6,9 +6,14 @@ using System.Net;
 
 namespace MusicLibrary
 {
+
     public class SongsRepository
     {
-        MusicLibraryDb musicLibraryDb = new MusicLibraryDb();
+        private readonly MusicLibraryDb _musicLibraryDb;
+        public SongsRepository(MusicLibraryDb musicLibraryDb)
+        {
+            _musicLibraryDb = musicLibraryDb ?? throw new ArgumentNullException(nameof(musicLibraryDb));
+        }
         public void AddSong()
         {
             Console.Clear();
@@ -31,7 +36,7 @@ namespace MusicLibrary
                 return;
             }
 
-            var album = musicLibraryDb.Albums.FirstOrDefault(a => a.Id == AlbumIdValue);
+            var album = _musicLibraryDb.Albums.FirstOrDefault(a => a.Id == AlbumIdValue);
             if (album != null)
             {
                 Console.WriteLine("Provide Song Title:");
@@ -55,7 +60,7 @@ namespace MusicLibrary
 
                 Console.WriteLine("Provide MP3 url of Music: ");
                 string MusicUrlInput = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(MusicUrlInput) || !MusicUrlInput.Contains(".mp3"))
+                if (string.IsNullOrWhiteSpace(MusicUrlInput))
                 {
                     Console.WriteLine("Invalid url input.");
                     return;
@@ -70,7 +75,7 @@ namespace MusicLibrary
                     return;
                 }
 
-                var songs = musicLibraryDb.Songs.Where(s => s.AlbumId == AlbumIdValue).ToList();
+                var songs = _musicLibraryDb.Songs.Where(s => s.AlbumId == AlbumIdValue).ToList();
                 while (songs.Any(s => s.TrackNumber == TrackNumberValue))
                 {
                     Console.WriteLine("Track Number is taken, try agaian.");
@@ -94,8 +99,8 @@ namespace MusicLibrary
                 try
                 {
                     Song NewSong = new Song { AlbumId = AlbumIdValue, Title = NewSongtTitle, TimeSpan = TimeSpanValue, MusicUrl = MusicUrlInput, TrackNumber = TrackNumberValue, TimesPlayed = TimesPlayedValue };
-                    musicLibraryDb.Songs.Add(NewSong);
-                    musicLibraryDb.SaveChanges();
+                    _musicLibraryDb.Songs.Add(NewSong);
+                    _musicLibraryDb.SaveChanges();
                     string logEntry = $"{Environment.NewLine} {DateTime.Now}: Created Song - {NewSong.Title} in Album - {album.Title}";
                     File.AppendAllText(SystemLogsFile, logEntry);
 
@@ -130,7 +135,7 @@ namespace MusicLibrary
                 return;
             }
 
-            var song = musicLibraryDb.Songs
+            var song = _musicLibraryDb.Songs
             .Include(s => s.Album)
             .Include(s => s.Album.Artist)
             .FirstOrDefault(s => s.Id == SongId);
@@ -143,6 +148,7 @@ namespace MusicLibrary
 
             try
             {
+
                 LibVLC libVLC = new LibVLC();
                 var client = new WebClient();
                 string DownloadedSong = Path.Combine(desktopPath, $"{song.Title}");
@@ -200,7 +206,7 @@ namespace MusicLibrary
                 Console.WriteLine("Invalid Song Id Input.");
                 return;
             }
-            var song = musicLibraryDb.Songs.Include(s => s.Album).Include(s => s.Album.Artist).FirstOrDefault(s => s.Id == SongId);
+            var song = _musicLibraryDb.Songs.Include(s => s.Album).Include(s => s.Album.Artist).FirstOrDefault(s => s.Id == SongId);
             if (song != null)
             {
                 Console.WriteLine();
@@ -236,7 +242,7 @@ namespace MusicLibrary
                     Console.WriteLine("invalid TrackNumber input.");
                     return;
                 }
-                var AllSongs = musicLibraryDb.Songs.Include(al => al.Album).Where(al => al.AlbumId == song.AlbumId).ToList();
+                var AllSongs = _musicLibraryDb.Songs.Include(al => al.Album).Where(al => al.AlbumId == song.AlbumId).ToList();
                 while (AllSongs.Any(al => al.TrackNumber == NewTrackNumber))
                 {
                     Console.WriteLine("Track Number taken, Try Again.");
@@ -265,7 +271,7 @@ namespace MusicLibrary
                 song.TimeSpan = NewSongTimespan;
                 song.TimesPlayed = NewSongTimesPlayed;
                 song.TrackNumber = NewTrackNumber;
-                musicLibraryDb.SaveChanges();
+                _musicLibraryDb.SaveChanges();
                 Console.WriteLine("Updated song.");
                 return;
 
@@ -279,7 +285,7 @@ namespace MusicLibrary
         public void PrintSongs()
         {
             Console.Clear();
-            var AllSongs = musicLibraryDb.Songs
+            var AllSongs = _musicLibraryDb.Songs
             .Include(s => s.Album).
              Include(s => s.Album.Artist)
             .ToList();
@@ -326,7 +332,7 @@ namespace MusicLibrary
                 return;
             }
 
-            var song = musicLibraryDb.Songs
+            var song = _musicLibraryDb.Songs
             .Include(s => s.Album)
             .Include(s => s.Album.Artist)
             .FirstOrDefault(s => s.Id == SongIdValue);
@@ -335,8 +341,8 @@ namespace MusicLibrary
                 try
                 {
 
-                    musicLibraryDb.Songs.Remove(song);
-                    musicLibraryDb.SaveChanges();
+                    _musicLibraryDb.Songs.Remove(song);
+                    _musicLibraryDb.SaveChanges();
                     string logEntry = $"{Environment.NewLine} {DateTime.Now}: Deleted Song - {song.Title} in Album - {song.Album.Title}";
                     File.AppendAllText(SystemLogsFile, logEntry);
                     Console.WriteLine($"removed song: {song.Title}");

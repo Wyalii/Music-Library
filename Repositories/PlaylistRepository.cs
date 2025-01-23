@@ -8,7 +8,11 @@ namespace Music_Library
 {
     public class PlaylistRepository
     {
-        MusicLibraryDb musicLibraryDb = new MusicLibraryDb();
+        private readonly MusicLibraryDb _musicLibraryDb;
+        public PlaylistRepository(MusicLibraryDb musicLibraryDb)
+        {
+            _musicLibraryDb = musicLibraryDb ?? throw new ArgumentNullException(nameof(musicLibraryDb));
+        }
         public void CreatePlayList()
         {
             Console.Clear();
@@ -91,7 +95,7 @@ namespace Music_Library
                         return;
                     }
 
-                    var song = musicLibraryDb.Songs.FirstOrDefault(s => s.Id == SongId);
+                    var song = _musicLibraryDb.Songs.FirstOrDefault(s => s.Id == SongId);
                     if (song == null)
                     {
                         Console.WriteLine("Song with provided id doesn't exists.");

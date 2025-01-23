@@ -5,7 +5,11 @@ namespace MusicLibrary
 {
     public class AlbumsRepository
     {
-        MusicLibraryDb musicLibraryDb = new MusicLibraryDb();
+        private readonly MusicLibraryDb _musicLibraryDb;
+        public AlbumsRepository(MusicLibraryDb musicLibraryDb)
+        {
+            _musicLibraryDb = musicLibraryDb ?? throw new ArgumentNullException(nameof(musicLibraryDb));
+        }
         public void AddAlbum()
         {
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
@@ -59,7 +63,7 @@ namespace MusicLibrary
                 return;
             }
 
-            var artist = musicLibraryDb.Artists.Include(a => a.Albums).FirstOrDefault(a => a.Id == IdValue);
+            var artist = _musicLibraryDb.Artists.Include(a => a.Albums).FirstOrDefault(a => a.Id == IdValue);
 
             try
             {
@@ -67,8 +71,8 @@ namespace MusicLibrary
                 {
 
                     Album NewAlbum = new Album { ArtistId = artist.Id, Title = TitleInput, ReleaseYear = ReleaseYearValue, Genre = GenreInput, Rating = RatingValue };
-                    musicLibraryDb.Albums.Add(NewAlbum);
-                    musicLibraryDb.SaveChanges();
+                    _musicLibraryDb.Albums.Add(NewAlbum);
+                    _musicLibraryDb.SaveChanges();
                     string logEntry = $"{Environment.NewLine} {DateTime.Now}: Created Album - {NewAlbum.Title} - Artist: {artist.Name}";
                     File.AppendAllText(SystemLogsFile, logEntry);
                     Console.WriteLine($"Added Album: {NewAlbum.Title}");
@@ -109,13 +113,13 @@ namespace MusicLibrary
                 return;
             }
 
-            var AlbumToRemove = musicLibraryDb.Albums.Include(a => a.Artist).FirstOrDefault(a => a.Id == IdValue);
+            var AlbumToRemove = _musicLibraryDb.Albums.Include(a => a.Artist).FirstOrDefault(a => a.Id == IdValue);
             try
             {
                 if (AlbumToRemove != null)
                 {
-                    musicLibraryDb.Albums.Remove(AlbumToRemove);
-                    musicLibraryDb.SaveChanges();
+                    _musicLibraryDb.Albums.Remove(AlbumToRemove);
+                    _musicLibraryDb.SaveChanges();
                     string logEntry = $"{Environment.NewLine} {DateTime.Now}: Deleted Album - {AlbumToRemove.Title} - Artist: {AlbumToRemove.Artist.Name}";
                     File.AppendAllText(SystemLogsFile, logEntry);
                     Console.WriteLine($"Removed Album from database: {AlbumToRemove.Title}");
@@ -155,7 +159,7 @@ namespace MusicLibrary
                 return;
             }
 
-            var AlbumToUpdate = musicLibraryDb.Albums.Include(a => a.Artist).FirstOrDefault(a => a.Id == IdValue);
+            var AlbumToUpdate = _musicLibraryDb.Albums.Include(a => a.Artist).FirstOrDefault(a => a.Id == IdValue);
             if (AlbumToUpdate != null)
             {
 
@@ -201,7 +205,7 @@ namespace MusicLibrary
                     AlbumToUpdate.ReleaseYear = ReleaseYearValue;
                     AlbumToUpdate.Genre = GenreInput;
                     AlbumToUpdate.Rating = RatingValue;
-                    musicLibraryDb.SaveChanges();
+                    _musicLibraryDb.SaveChanges();
                     string logEntry = $"{Environment.NewLine} {DateTime.Now}: Updated Album - {AlbumToUpdate.Title} - Artist: {AlbumToUpdate.Artist.Name}";
                     File.AppendAllText(SystemLogsFile, logEntry);
 
@@ -224,7 +228,7 @@ namespace MusicLibrary
         {
             Console.Clear();
             Console.WriteLine("All Albums: ");
-            var AllAlbums = musicLibraryDb.Albums.Include(a => a.Artist).ToList();
+            var AllAlbums = _musicLibraryDb.Albums.Include(a => a.Artist).ToList();
             if (AllAlbums == null)
             {
                 Console.WriteLine("No Albums Added.");
@@ -268,7 +272,7 @@ namespace MusicLibrary
                 return;
             }
 
-            var album = musicLibraryDb.Albums.Include(a => a.Artist).FirstOrDefault(a => a.Id == IdValue);
+            var album = _musicLibraryDb.Albums.Include(a => a.Artist).FirstOrDefault(a => a.Id == IdValue);
             if (album != null)
             {
                 try
@@ -282,7 +286,7 @@ namespace MusicLibrary
                         return;
                     }
                     album.Rating = RatingValue;
-                    musicLibraryDb.SaveChanges();
+                    _musicLibraryDb.SaveChanges();
                     string logEntry = $"{Environment.NewLine} {DateTime.Now}: Updated Album Rating - {album.Title} - Artist: {album.Artist.Name}";
                     File.AppendAllText(SystemLogsFile, logEntry);
                     Console.WriteLine("Updated Rating!");

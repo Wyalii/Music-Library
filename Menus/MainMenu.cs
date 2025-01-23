@@ -2,13 +2,21 @@ namespace Music_Library
 {
     public class MainMenu
     {
-        ArtistsMenu artistsMenu = new ArtistsMenu();
-        AlbumsMenu albumsMenu = new AlbumsMenu();
-        AnalitycsMenu analitycsMenu = new AnalitycsMenu();
-        SongsMenu songsMenu = new SongsMenu();
+        private readonly ArtistsMenu _artistsMenu;
+        private readonly AlbumsMenu _albumsMenu;
+        private readonly AnalitycsMenu _analitycsMenu;
+        private readonly SongsMenu _songsMenu;
+        private readonly PlaylistsMenu _playlistsMenu;
 
-        PlaylistsMenu playlistsMenu = new PlaylistsMenu();
 
+        public MainMenu(ArtistsMenu artistsMenu, AlbumsMenu albumsMenu, AnalitycsMenu analitycsMenu, SongsMenu songsMenu, PlaylistsMenu playlistsMenu)
+        {
+            _artistsMenu = artistsMenu ?? throw new ArgumentNullException(nameof(artistsMenu));
+            _albumsMenu = albumsMenu ?? throw new ArgumentNullException(nameof(albumsMenu));
+            _analitycsMenu = analitycsMenu ?? throw new ArgumentNullException(nameof(analitycsMenu));
+            _songsMenu = songsMenu ?? throw new ArgumentNullException(nameof(songsMenu));
+            _playlistsMenu = playlistsMenu ?? throw new ArgumentNullException(nameof(playlistsMenu));
+        }
         public void ShowMainMenu()
         {
             bool start = true;
@@ -82,23 +90,23 @@ namespace Music_Library
                         break;
 
                     case 1:
-                        artistsMenu.ShowArtistsMenu();
+                        _artistsMenu.ShowArtistsMenu();
                         break;
 
                     case 2:
-                        albumsMenu.ShowAlbumsMenu();
+                        _albumsMenu.ShowAlbumsMenu();
                         break;
 
                     case 3:
-                        songsMenu.ShowSongsMenu();
+                        _songsMenu.ShowSongsMenu();
                         break;
 
                     case 4:
-                        analitycsMenu.ShowAnalitycsMenu();
+                        _analitycsMenu.ShowAnalitycsMenu();
                         break;
 
                     case 5:
-                        playlistsMenu.ShowPlaylistsMenu();
+                        _playlistsMenu.ShowPlaylistsMenu();
                         break;
                 }
 

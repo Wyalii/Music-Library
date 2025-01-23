@@ -5,12 +5,16 @@ namespace MusicLibrary
 {
     public class AnalitycsRepository
     {
-        MusicLibraryDb musicLibraryDb = new MusicLibraryDb();
+        private readonly MusicLibraryDb _musicLibraryDb;
+        public AnalitycsRepository(MusicLibraryDb musicLibraryDb)
+        {
+            _musicLibraryDb = musicLibraryDb ?? throw new ArgumentNullException(nameof(musicLibraryDb));
+        }
         public void PrintMostListenedSongs()
         {
             Console.Clear();
             Console.WriteLine("Most Listened Songs");
-            var AllSongs = musicLibraryDb.Songs.Include(s => s.Album).Include(s => s.Album.Artist).OrderByDescending(al => al.TimesPlayed).ToList();
+            var AllSongs = _musicLibraryDb.Songs.Include(s => s.Album).Include(s => s.Album.Artist).OrderByDescending(al => al.TimesPlayed).ToList();
             if (AllSongs.Count > 0)
             {
                 foreach (var song in AllSongs)
@@ -37,7 +41,7 @@ namespace MusicLibrary
         public void PrintGenreStatistics()
         {
             Console.Clear();
-            var AllAlbums = musicLibraryDb.Albums.Include(a => a.Artist).OrderByDescending(a => a.Rating).ToList();
+            var AllAlbums = _musicLibraryDb.Albums.Include(a => a.Artist).OrderByDescending(a => a.Rating).ToList();
             if (AllAlbums.Count > 0)
             {
                 Console.WriteLine("All Genre Statistics");
@@ -61,7 +65,7 @@ namespace MusicLibrary
         public void PrintArtistsRatings()
         {
             Console.Clear();
-            var AllArtists = musicLibraryDb.Artists.Include(a => a.Albums).ToList();
+            var AllArtists = _musicLibraryDb.Artists.Include(a => a.Albums).ToList();
             if (AllArtists.Count > 0)
             {
                 foreach (var artist in AllArtists)

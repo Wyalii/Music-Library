@@ -5,7 +5,11 @@ namespace MusicLibrary
 {
     public class ArtistsRepository
     {
-        MusicLibraryDb musicLibraryDb = new MusicLibraryDb();
+        private readonly MusicLibraryDb _musicLibraryDb;
+        public ArtistsRepository(MusicLibraryDb musicLibraryDb)
+        {
+            _musicLibraryDb = musicLibraryDb ?? throw new ArgumentNullException(nameof(musicLibraryDb));
+        }
         public void AddNewArtist()
         {
             Console.Clear();
@@ -53,14 +57,14 @@ namespace MusicLibrary
                 return;
             }
 
-            var ExistsOrNot = musicLibraryDb.Artists.FirstOrDefault(a => a.Name.ToLower() == NewArtistName.ToLower());
+            var ExistsOrNot = _musicLibraryDb.Artists.FirstOrDefault(a => a.Name.ToLower() == NewArtistName.ToLower());
             try
             {
                 if (ExistsOrNot == null)
                 {
                     Artist NewArtist = new Artist { Name = NewArtistName, Country = NewArtistCountry, Genre = NewArtistGenre, Description = NewArtistDescription };
-                    musicLibraryDb.Artists.Add(NewArtist);
-                    musicLibraryDb.SaveChanges();
+                    _musicLibraryDb.Artists.Add(NewArtist);
+                    _musicLibraryDb.SaveChanges();
                     Console.WriteLine($"Added new artist: {NewArtist.Name}");
                     Console.WriteLine();
                     Console.WriteLine($"Now Fill {NewArtist.Name}'s Details:");
@@ -109,7 +113,7 @@ namespace MusicLibrary
 
                     ArtistDetails NewArtistsDetails = new ArtistDetails { ArtistId = NewArtist.Id, FormationYear = FromationYearValue, Website = WebsiteInput, TotalAlbums = TotalAlbumsValue, IsActive = IsActiveValue };
                     NewArtist.ArtistDetails = NewArtistsDetails;
-                    musicLibraryDb.SaveChanges();
+                    _musicLibraryDb.SaveChanges();
                     string logEntry = $"{Environment.NewLine} {DateTime.Now}: Created Artist - {NewArtist.Name}";
                     File.AppendAllText(SystemLogsFile, logEntry);
 
@@ -152,11 +156,11 @@ namespace MusicLibrary
             {
                 try
                 {
-                    var ExistsOrNot = musicLibraryDb.Artists.FirstOrDefault(a => a.Id == IdValue);
+                    var ExistsOrNot = _musicLibraryDb.Artists.FirstOrDefault(a => a.Id == IdValue);
                     if (ExistsOrNot != null)
                     {
-                        musicLibraryDb.Artists.Remove(ExistsOrNot);
-                        musicLibraryDb.SaveChanges();
+                        _musicLibraryDb.Artists.Remove(ExistsOrNot);
+                        _musicLibraryDb.SaveChanges();
                         string logEntry = $"{Environment.NewLine} {DateTime.Now}: Removed Artist - {ExistsOrNot.Name}";
                         File.AppendAllText(SystemLogsFile, logEntry);
                         Console.WriteLine($"Success, Removed Artist: {ExistsOrNot.Name}");
@@ -200,7 +204,7 @@ namespace MusicLibrary
             {
                 try
                 {
-                    var ExistsOrNot = musicLibraryDb.Artists.Include(a => a.ArtistDetails).FirstOrDefault(a => a.Id == IdValue);
+                    var ExistsOrNot = _musicLibraryDb.Artists.Include(a => a.ArtistDetails).FirstOrDefault(a => a.Id == IdValue);
                     if (ExistsOrNot != null)
                     {
                         Console.WriteLine("Wirte Artist's New name:");
@@ -289,7 +293,7 @@ namespace MusicLibrary
                         ExistsOrNot.ArtistDetails.FormationYear = FormationYearValue;
                         ExistsOrNot.ArtistDetails.IsActive = IsActiveValue;
                         ExistsOrNot.ArtistDetails.Website = WebsiteInput;
-                        musicLibraryDb.SaveChanges();
+                        _musicLibraryDb.SaveChanges();
                         string logEntry = $"{Environment.NewLine} {DateTime.Now}: Updated Artist - {ExistsOrNot.Name}";
                         File.AppendAllText(SystemLogsFile, logEntry);
                         Console.WriteLine("Success, Updated Artist!");
@@ -316,7 +320,7 @@ namespace MusicLibrary
         public void PrintArtists()
         {
             Console.Clear();
-            List<Artist> AllArtists = musicLibraryDb.Artists.Include(a => a.ArtistDetails).ToList();
+            List<Artist> AllArtists = _musicLibraryDb.Artists.Include(a => a.ArtistDetails).ToList();
             if (AllArtists.Count > 0)
             {
                 Console.WriteLine("All Artists: ");
