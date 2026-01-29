@@ -1,3 +1,6 @@
+(i'm gonna rewrite better version of this on golang so STAY TUNED)
+
+
 # 🎵 Music Manager Project
 
 This is another project from **ITACADEMYSTEP**.  
